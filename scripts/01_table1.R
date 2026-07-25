@@ -25,22 +25,22 @@ summarise_measure <- function(df, measure_name, output_label, source_location = 
     eapc = eapc(rate)
   )
 }
-read_measure <- function(filename, measure_label) {
-  readr::read_csv(file.path(paths$data, filename), show_col_types = FALSE) |>
+read_measure <- function(variable, measure_label) {
+  readr::read_csv(require_input(variable), show_col_types = FALSE) |>
     dplyr::filter(sex == "Both") |>
     dplyr::mutate(measure = measure_label)
 }
 
 regional <- dplyr::bind_rows(
-  read_measure("region_dalys.csv", "DALYs"),
-  read_measure("region_deaths.csv", "Deaths"),
-  read_measure("region_incidence.csv", "Incidence")
+  read_measure("REGIONAL_DALY_INPUT", "DALYs"),
+  read_measure("REGIONAL_DEATH_INPUT", "Deaths"),
+  read_measure("REGIONAL_INCIDENCE_INPUT", "Incidence")
 )
 regional_rows <- regional |> dplyr::distinct(location) |> dplyr::pull(location) |>
   lapply(function(loc) dplyr::bind_rows(lapply(unique(regional$measure), function(m) summarise_measure(dplyr::filter(regional, measure == m), m, loc, loc)))) |>
   dplyr::bind_rows()
 
-global <- readr::read_csv(file.path(paths$data, "global_burden.csv"), show_col_types = FALSE)
+global <- readr::read_csv(require_input("GLOBAL_BURDEN_INPUT"), show_col_types = FALSE)
 global_rows <- lapply(c("Both", "Male", "Female"), function(sex_name) {
   d <- global |> dplyr::filter(sex == sex_name) |>
     dplyr::mutate(measure = dplyr::recode(measure, "DALYs (Disability-Adjusted Life Years)" = "DALYs"))

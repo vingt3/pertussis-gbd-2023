@@ -1,60 +1,97 @@
-# Pertussis GBD 2023: reproducible tables and figures
+# Pertussis GBD 2023: manuscript-specific analysis code
 
-This folder is a GitHub-ready, cleaned version of the code used to create the R1 main figures, Table 1, and the identified supplementary analyses. It contains no source data, personal paths, manuscript files, author information, or downloaded WHO files.
+This repository contains the R and Python code used for manuscript-specific
+data processing, secondary analyses, and generation of the main figures,
+Extended Data figures, and Table 1 for the R2 submission. It does not contain
+source data, restricted IHME materials, map layers, manuscript files, or local
+computer paths.
 
-## Layout
+The scripts operate on final GBD estimates and public WHO/UNICEF Joint
+Reporting Form (JRF) data. They do not reproduce the full GBD production
+pipeline. Code and documentation for the broader GBD 2023 estimation framework
+are available from the GBD 2023 code portal.
 
+## Repository layout
+
+```text
+scripts/       Analysis and plotting scripts
+outputs/       Generated files (created locally and excluded from the archive)
+.env.example   Placeholder-only input configuration template
 ```
-data/       # user-supplied input data (not tracked by Git)
-outputs/    # generated figures and tables (not tracked by Git)
-scripts/    # analysis and plotting scripts
+
+## Script-to-manuscript correspondence
+
+| Script | Output or analysis |
+| --- | --- |
+| `01_table1.R` | Main Table 1 |
+| `02_main_figures.R` | Main Figs. 1, 3 and 4 |
+| `03_figure2_maps.R` | Main Fig. 2, including the final three-panel grid layout |
+| `04_who_jrf_comparison.py` | Country-level GBD–WHO/JRF comparison datasets |
+| `05_extended_data_figure1.R` | Extended Data Fig. 1 |
+| `06_revision_sensitivity_analyses.py` | Random-effect, mortality-pathway and infant-mortality sensitivity outputs |
+| `07_extended_data_figures_2_10.R` | Extended Data Figs. 2–10 |
+
+## Input configuration
+
+No actual filenames are embedded in the public code. Copy `.env.example` to a
+private shell configuration, replace each angle-bracket placeholder with the
+corresponding local input file, and export the variables before running a
+script. Do not commit that private configuration.
+
+Example:
+
+```bash
+export GLOBAL_BURDEN_INPUT="<PATH_TO_GLOBAL_BURDEN_CSV>"
+export COUNTRY_BOUNDARIES_SHP="<PATH_TO_COUNTRY_BOUNDARY_VECTOR>"
+Rscript scripts/02_main_figures.R
+Rscript scripts/03_figure2_maps.R
 ```
 
-Run each script from the repository root, for example:
+The map script expects a country-boundary vector layer with a location
+identifier field and a separate disputed-boundary vector layer. The published
+manuscript reports that country boundaries were obtained from Natural Earth
+(`ne_110m_admin_0_countries`; public domain). The layers themselves are not
+redistributed here.
+
+Core burden files use the columns `location`, `year`, `sex`, `age`, `metric`,
+`measure`, `val`, `lower`, and `upper`. The country SDI input additionally uses
+`SDI`, `ASMR`, `ASIR`, and `ASDR`. The scripts validate required variables and
+stop with a clear error when an input has not been configured.
+
+## Running the analyses
+
+Run scripts from any working directory; outputs are written to `outputs/`.
 
 ```bash
 Rscript scripts/01_table1.R
-python scripts/06_who_jrf_comparison.py
+Rscript scripts/02_main_figures.R
+Rscript scripts/03_figure2_maps.R
+python3 scripts/04_who_jrf_comparison.py
+Rscript scripts/05_extended_data_figure1.R
+python3 scripts/06_revision_sensitivity_analyses.py
+Rscript scripts/07_extended_data_figures_2_10.R
 ```
 
-Scripts discover the repository root from their own location; no local directory needs to be edited.
-
-## Required inputs
-
-Use the following neutral filenames under `data/` (or adapt the constants at the top of a script).
-
-| Script | Input files |
-| --- | --- |
-| `01_table1.R`, `02_figure1_trends_regions.R` | `global_burden.csv`, `region_incidence.csv`, `region_deaths.csv`, `region_dalys.csv` |
-| `03_figure2_maps.R` | `country_incidence.csv`, `country_deaths.csv`, `country_dalys.csv`, `location_hierarchy.csv`, `shapefiles/gbd_boundaries.shp`, `shapefiles/disputed_boundaries.shp`; optional `location_crosswalk.csv` |
-| `04_figure3_age_pyramids.R` | `age_specific_burden_1990.csv`, `age_specific_burden_2023.csv` |
-| `05_figure4_sdi.R` | `country_sdi_burden_2023.csv` |
-| `06_who_jrf_comparison.py` | `who_reported_cases.xlsx`, `who_incidence_rates.xlsx`, `country_incidence.csv`, `location_hierarchy.csv` |
-| `07_who_jrf_figures.R` | outputs written by script 06 |
-| `08_appendix_revision_analyses.py` | `random_effects.csv`, `case_notification_replacements.csv`, `fatal_model_strategy.csv`, `location_hierarchy.csv`, `country_deaths.csv`, `country_incidence.csv`, `age_specific_burden.csv` |
-
-The CSV schemas follow the original GBD extracts: `location`, `year`, `sex`, `age`, `metric`, `measure`, `val`, `lower`, and `upper`. The SDI file additionally contains `SDI`, `ASMR`, `ASIR`, and `ASDR`.
-
-## Correspondence with R1
-
-- Main Figure 1: `02_figure1_trends_regions.R`
-- Main Figure 2: `03_figure2_maps.R`
-- Main Figure 3: `04_figure3_age_pyramids.R` (the pre-cleanup source was named `rebuild_figure4_pyramid.R`)
-- Main Figure 4: `05_figure4_sdi.R`
-- Main Table 1: `01_table1.R`
-- Supplementary Figure S1–S2 and Table S8–S9: `06_who_jrf_comparison.py`, `07_who_jrf_figures.R`
-- Supplementary Figure S10–S12 and related revision tables: `08_appendix_revision_analyses.py`
-
-The final R1 Figure 4 included a linear-scale annotation that was not present in a retained original script. Script 05 incorporates that annotation so the GitHub version records the final intended plotting logic.
-
-`04_figure3_age_pyramids.R` defaults to the global panel. Set `LOCATION_TARGET` to a region or super-region name to generate the matching age-pyramid supplementary figure, for example `LOCATION_TARGET="South Asia" Rscript scripts/04_figure3_age_pyramids.R`.
+The comparison and sensitivity scripts write derived files that can be assigned
+to the corresponding placeholder variables before the Extended Data scripts are
+run.
 
 ## Software
 
-R packages: `tidyverse`, `patchwork`, `scales`, `RColorBrewer`, `sf`, `cowplot`, `writexl`.
+- R 4.3.2 with `tidyverse` 2.0.0, `dplyr` 1.1.4, `ggplot2` 3.5.2,
+  `readr` 2.1.5, `patchwork` 1.3.0, `scales` 1.4.0,
+  `RColorBrewer` 1.1-3, `sf` 1.0-19, `cowplot` 1.1.3 and `writexl` 1.5.0.
+- Python 3.9.6 with the packages listed in `requirements.txt`.
 
-Python packages: `pandas`, `numpy`, `matplotlib`, `openpyxl`.
+## Data access and restrictions
 
-## Data access
+Final GBD 2023 estimates can be obtained through the GBD Results Tool following
+free user registration. WHO/JRF pertussis data are publicly available through
+the WHO Immunization Data Portal. Some underlying GBD input data are owned by
+third-party providers and cannot be redistributed. Only data that may lawfully
+be shared should be supplied to these scripts.
 
-Only data that may be shared lawfully should be added to `data/`. GBD source data and restricted IHME materials should be accessed and redistributed according to the applicable data-use terms.
+This archive intentionally excludes data, output files, map layers, and any
+machine-specific configuration. Licensing metadata will be finalized before
+the Zenodo record is published; the record created during revision remains a
+draft until that step is complete.
