@@ -91,7 +91,4 @@ the WHO Immunization Data Portal. Some underlying GBD input data are owned by
 third-party providers and cannot be redistributed. Only data that may lawfully
 be shared should be supplied to these scripts.
 
-This archive intentionally excludes data, output files, map layers, and any
-machine-specific configuration. Licensing metadata will be finalized before
-the Zenodo record is published; the record created during revision remains a
-draft until that step is complete.
+Code in this repository is released under the MIT License. See the LICENSE file for details. Map layers and source data are not included in this repository and remain subject to their respective terms of use.
