@@ -47,11 +47,7 @@ Rscript scripts/02_main_figures.R
 Rscript scripts/03_figure2_maps.R
 ```
 
-The map script expects a country-boundary vector layer with a location
-identifier field and a separate disputed-boundary vector layer. The published
-manuscript reports that country boundaries were obtained from Natural Earth
-(`ne_110m_admin_0_countries`; public domain). The layers themselves are not
-redistributed here.
+The map script expects a country-boundary vector layer with a location identifier field and a separate disputed-boundary vector layer. The map shapefiles used for Fig. 2 were sourced from Global Administrative Areas—GADM maps and data 2019 (version 3.6; https://gadm.org/) and are subject to the IHME Free-of-Charge Non-Commercial User Agreement (https://www.healthdata.org/Data-tools-practices/data-practices/ihme-free-charge-non-commercial-user-agreement). The shapefile layers are not redistributed in this repository.
 
 Core burden files use the columns `location`, `year`, `sex`, `age`, `metric`,
 `measure`, `val`, `lower`, and `upper`. The country SDI input additionally uses
